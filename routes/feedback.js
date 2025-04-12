@@ -223,7 +223,7 @@ router.post("/staff", async (req, res) => {
  *     tags:
  *       - Feedback
  *     security:
- *       - BearerAuth: []
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of feedback logs.

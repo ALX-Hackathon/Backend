@@ -66,7 +66,9 @@ const swaggerOptions = {
                 }
             }
         },
+       
     },
+
     apis: ["./routes/*.js"] // Adjust path as needed where you add your route annotations
 };
 
