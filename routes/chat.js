@@ -62,6 +62,75 @@ async function getDashboardSummary() {
   }
 }
 
+// --- New Helper Functions for Feedback Detection & Saving ---
+async function analyzeSentiment(comment) {
+  if (!comment) return "Neutral";
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) return "Neutral";
+  const MODEL_NAME = "gemini-1.5-flash-latest";
+  const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
+
+  const systemPrompt =
+    "You are a sentiment analysis tool. Analyze the sentiment of the following comment. Return only one word: Positive, Neutral, or Negative. Comment: " +
+    comment;
+  const requestBody = {
+    contents: [
+      {
+        parts: [{ text: systemPrompt }]
+      }
+    ],
+    generationConfig: {
+      maxOutputTokens: 10,
+      temperature: 0.0
+    }
+  };
+
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+    if (!response.ok) {
+      console.error("Sentiment analysis API error:", response.status);
+      return "Neutral";
+    }
+    const data = await response.json();
+    let result = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (result) {
+      result = result.trim().toLowerCase();
+      if (result.includes("positive")) return "Positive";
+      if (result.includes("negative")) return "Negative";
+    }
+    return "Neutral";
+  } catch (err) {
+    console.error("Error during sentiment analysis:", err);
+    return "Neutral";
+  }
+}
+function isFeedbackRelated(text) {
+  const keywords = ["feedback", "complaint", "suggestion", "comment"];
+  const lowerText = text.toLowerCase();
+  return keywords.some((kw) => lowerText.includes(kw));
+}
+
+async function saveChatFeedback(message) {
+  try {
+    // Analyze the message to determine its sentiment
+    const sentimentResult = await analyzeSentiment(message);
+    // Create a new feedback record using the chat message and analyzed sentiment.
+    const newFeedback = new Feedback({
+      source: "Guest",
+      comment: message,
+      sentiment: sentimentResult // Store the analyzed sentiment
+    });
+    const saved = await newFeedback.save();
+    console.log("Chat feedback saved with ID:", saved._id);
+  } catch (err) {
+    console.error("Error saving chat feedback:", err);
+  }
+}
+
 // --- POST /api/chat/message ---
 /**
  * @swagger
@@ -224,6 +293,11 @@ router.post("/message", async (req, res) => {
       chatHistoryStore[sessionId] = currentHistory.slice(
         -MAX_HISTORY_LENGTH * 2
       );
+    }
+
+    // --- New: Check if conversation seems feedback-related ---
+    if (isFeedbackRelated(userInput) || isFeedbackRelated(botText)) {
+      saveChatFeedback(userInput + "\n" + botText); // Combine both parts if desired
     }
 
     // 6. Send Reply to Frontend
