@@ -3,6 +3,7 @@ const express = require("express");
 const Feedback = require("../models/Feedback");
 // Assuming keyword/SMS functions are defined above or required from utils
 // const { checkIfNegative, sendSmsAlert } = require('../utils/feedbackUtils');
+const { authenticate, authorizeAdmin } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -218,16 +219,20 @@ router.post("/staff", async (req, res) => {
  * @swagger
  * /api/feedback:
  *   get:
- *     summary: Retrieve all feedback logs.
+ *     summary: Retrieve all feedback logs (Admins only).
  *     tags:
  *       - Feedback
+ *     security:
+ *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: A list of feedback logs.
- *       500:
- *         description: Server error.
+ *       401:
+ *         description: Unauthorized.
+ *       403:
+ *         description: Forbidden for non-admin users.
  */
-router.get("/", async (req, res) => {
+router.get("/", authenticate, authorizeAdmin, async (req, res) => {
   try {
     // Fetch all feedback, sorted by timestamp descending
     const feedbackList = await Feedback.find().sort({ timestamp: -1 });
