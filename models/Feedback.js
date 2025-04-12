@@ -5,7 +5,7 @@ const FeedbackSchema = new mongoose.Schema({
     // --- Common Fields ---
     source: { type: String, enum: ['Guest', 'Staff'], required: true },
     timestamp: { type: Date, default: Date.now },
-    isNegative: { type: Boolean, default: false },
+    sentiment: { type: String, enum: ['Positive', 'Neutral', 'Negative'], default: 'Neutral' },
     feedbackArea: { type: String, trim: true }, // e.g., Checkout, Room, Dining, Pool
 
     // --- Context Fields ---

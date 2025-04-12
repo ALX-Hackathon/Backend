@@ -37,13 +37,51 @@ const NEGATIVE_KEYWORDS_AMH = [
   "እርጥበት"
 ]; // Needs more words!
 
-function checkIfNegative(comment) {
-  if (!comment) return false;
-  const lowerComment = comment.toLowerCase();
-  const allKeywords = [...NEGATIVE_KEYWORDS_ENG, ...NEGATIVE_KEYWORDS_AMH];
-  return allKeywords.some((keyword) =>
-    lowerComment.includes(keyword.toLowerCase())
-  ); // Case-insensitive check
+// New helper function for sentiment analysis using the Gemini API
+async function analyzeSentiment(comment) {
+  if (!comment) return "Neutral";
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_API_KEY) return "Neutral";
+  const MODEL_NAME = "gemini-1.5-flash-latest";
+  const API_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`;
+
+  const systemPrompt =
+    "You are a sentiment analysis tool. Analyze the sentiment of the following comment. Return only one word: Positive, Neutral, or Negative. Comment: " +
+    comment;
+  const requestBody = {
+    contents: [
+      {
+        parts: [{ text: systemPrompt }]
+      }
+    ],
+    generationConfig: {
+      maxOutputTokens: 10,
+      temperature: 0.0
+    }
+  };
+
+  try {
+    const response = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody)
+    });
+    if (!response.ok) {
+      console.error("Sentiment analysis API error:", response.status);
+      return "Neutral";
+    }
+    const data = await response.json();
+    let result = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (result) {
+      result = result.trim().toLowerCase();
+      if (result.includes("positive")) return "Positive";
+      if (result.includes("negative")) return "Negative";
+    }
+    return "Neutral";
+  } catch (err) {
+    console.error("Error during sentiment analysis:", err);
+    return "Neutral";
+  }
 }
 
 // SMS Alert Function
@@ -125,7 +163,7 @@ async function sendSmsAlert(feedback) {
 router.post("/guest", async (req, res) => {
   const { rating, comment, roomNumber, language } = req.body;
   try {
-    const isNegative = checkIfNegative(comment);
+    const sentiment = await analyzeSentiment(comment); // Use sentiment analysis only
 
     const newFeedback = new Feedback({
       source: "Guest",
@@ -133,18 +171,18 @@ router.post("/guest", async (req, res) => {
       comment,
       roomNumber,
       language,
-      isNegative // Set based on keyword analysis
+      sentiment // Store sentiment result from API
     });
 
     const savedFeedback = await newFeedback.save();
 
-    // Trigger alert asynchronously if negative (don't wait for SMS)
-    if (isNegative) {
+    // Trigger SMS alert if sentiment is Negative
+    if (sentiment === "Negative") {
       sendSmsAlert(savedFeedback).catch((err) =>
         console.error("Async SMS failed:", err)
-      ); // Log async errors
+      );
     }
-
+    console.log("Feedback saved successfully:", savedFeedback); // Debug log
     res.status(201).json(savedFeedback);
   } catch (error) {
     console.error("Error saving guest feedback:", error);
@@ -185,25 +223,21 @@ router.post("/guest", async (req, res) => {
 router.post("/staff", async (req, res) => {
   const { category, severity, location, details } = req.body;
   try {
-    // Staff high severity is considered negative for alert purposes
-    const isNegative = severity === "High";
-
     const newFeedback = new Feedback({
       source: "Staff",
       category,
       severity,
       location,
-      details,
-      isNegative
+      details
     });
 
     const savedFeedback = await newFeedback.save();
 
-    // Trigger alert asynchronously if negative
-    if (isNegative) {
+    // Trigger SMS alert if severity is High
+    if (severity === "High") {
       sendSmsAlert(savedFeedback).catch((err) =>
         console.error("Async SMS failed:", err)
-      ); // Log async errors
+      );
     }
 
     res.status(201).json(savedFeedback);
