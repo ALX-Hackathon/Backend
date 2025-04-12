@@ -49,7 +49,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://${HOST}:${PORT}`
+                url: `https://backend-bhww.onrender.com/`
             }
         ]
     },

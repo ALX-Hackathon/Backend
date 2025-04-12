@@ -374,7 +374,6 @@ router.get("/validate-token", async (req, res) => {
  *                 type: string
  *               feedbackArea:
  *                 type: string
- *               // ...additional properties as needed...
  *     responses:
  *       201:
  *         description: Contextual feedback created successfully.
