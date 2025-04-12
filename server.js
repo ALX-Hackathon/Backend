@@ -6,7 +6,7 @@ const connectDB = require("./config/db");
 const feedbackRoutes = require("./routes/feedback");
 const morgan = require("morgan"); // HTTP request logger middleware
 const chatRoutes = require("./routes/chat"); // Import the chat routes
-const authRoutes = require("./routes/auth")
+const authRoutes = require("./routes/auth.js")
 
 // --- Swagger Dependencies ---
 const swaggerJsDoc = require("swagger-jsdoc");
