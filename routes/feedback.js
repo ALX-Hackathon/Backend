@@ -7,35 +7,6 @@ const { authenticate, authorizeAdmin } = require("../middleware/auth");
 
 const router = express.Router();
 
-// --- Helper Functions (Defined directly here for hackathon speed) ---
-
-// Simple Keyword Lists (Expand these significantly for real use)
-const NEGATIVE_KEYWORDS_ENG = [
-  "bad",
-  "dirty",
-  "broken",
-  "slow",
-  "cold",
-  "poor",
-  "unhelpful",
-  "noise",
-  "smell",
-  "issue"
-];
-const NEGATIVE_KEYWORDS_AMH = [
-  "መጥፎ",
-  "ቆሻሻ",
-  "የተሰበረ",
-  "ቀርፋፋ",
-  "ቀዝቃዛ",
-  "ደካማ",
-  "የማይረዳ",
-  "ጫጫታ",
-  "ሽታ",
-  "ችግር",
-  "አይሰራም",
-  "እርጥበት"
-]; // Needs more words!
 
 // New helper function for sentiment analysis using the Gemini API
 async function analyzeSentiment(comment) {
