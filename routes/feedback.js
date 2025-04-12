@@ -64,7 +64,34 @@ async function sendSmsAlert(feedback) {
 
 // --- Routes ---
 
-// POST /api/feedback/guest - Create Guest Feedback
+/**
+ * @swagger
+ * /api/feedback/guest:
+ *   post:
+ *     summary: Create guest feedback.
+ *     tags:
+ *       - Feedback
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rating:
+ *                 type: number
+ *               comment:
+ *                 type: string
+ *               roomNumber:
+ *                 type: string
+ *               language:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Guest feedback created successfully.
+ *       500:
+ *         description: Server error.
+ */
 router.post('/guest', async (req, res) => {
   const { rating, comment, roomNumber, language } = req.body;
   try {
@@ -93,7 +120,34 @@ router.post('/guest', async (req, res) => {
   }
 });
 
-// POST /api/feedback/staff - Create Staff Feedback
+/**
+ * @swagger
+ * /api/feedback/staff:
+ *   post:
+ *     summary: Create staff feedback.
+ *     tags:
+ *       - Feedback
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               category:
+ *                 type: string
+ *               severity:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *               details:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Staff feedback created successfully.
+ *       500:
+ *         description: Server error.
+ */
 router.post('/staff', async (req, res) => {
   const { category, severity, location, details } = req.body;
   try {
@@ -123,7 +177,19 @@ router.post('/staff', async (req, res) => {
   }
 });
 
-// GET /api/feedback - Get all Feedback logs
+/**
+ * @swagger
+ * /api/feedback:
+ *   get:
+ *     summary: Retrieve all feedback logs.
+ *     tags:
+ *       - Feedback
+ *     responses:
+ *       200:
+ *         description: A list of feedback logs.
+ *       500:
+ *         description: Server error.
+ */
 router.get('/', async (req, res) => {
   try {
     // Fetch all feedback, sorted by timestamp descending
@@ -143,7 +209,38 @@ const validTestTokens = {
   'USED_TOKEN': { valid: false, message: 'This feedback link has already been used.'} // Example used token
 };
 
-// GET /api/feedback/validate-token?tok=...&loc=...&id=...
+/**
+ * @swagger
+ * /api/feedback/validate-token:
+ *   get:
+ *     summary: Validate feedback token.
+ *     tags:
+ *       - Feedback
+ *     parameters:
+ *       - in: query
+ *         name: tok
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The feedback token.
+ *       - in: query
+ *         name: loc
+ *         schema:
+ *           type: string
+ *         description: Feedback location.
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *         description: Context id.
+ *     responses:
+ *       200:
+ *         description: Valid token.
+ *       400:
+ *         description: Token is required.
+ *       404:
+ *         description: Invalid or expired token.
+ */
 router.get('/validate-token', async (req, res) => {
    const token = req.query.tok;
    const loc = req.query.loc; // Use location for context if needed
@@ -193,7 +290,44 @@ router.get('/validate-token', async (req, res) => {
 
 // routes/feedback.js (Backend)
 
-// POST /api/feedback/contextual - Handles detailed, contextual feedback
+/**
+ * @swagger
+ * /api/feedback/contextual:
+ *   post:
+ *     summary: Submit detailed contextual feedback.
+ *     tags:
+ *       - Feedback
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               context:
+ *                 type: object
+ *                 properties:
+ *                   loc:
+ *                     type: string
+ *                   id:
+ *                     type: string
+ *                   token:
+ *                     type: string
+ *                   guestName:
+ *                     type: string
+ *               source:
+ *                 type: string
+ *               feedbackArea:
+ *                 type: string
+ *               // ...additional properties as needed...
+ *     responses:
+ *       201:
+ *         description: Contextual feedback created successfully.
+ *       400:
+ *         description: Validation error.
+ *       500:
+ *         description: Server error.
+ */
 router.post('/contextual', async (req, res) => {
   console.log("BACKEND: Received request body on /contextual:", JSON.stringify(req.body, null, 2)); // <-- ADD THIS LOG
 

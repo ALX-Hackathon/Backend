@@ -56,9 +56,10 @@ const swaggerOptions = {
     apis: ["./routes/*.js"] // Adjust path as needed where you add your route annotations
 };
 
-app.use('/', (req, res) => {
-    console.log("Swagger UI is available at /docs");
-})
+app.get('/', (req, res) => {
+    res.send("Habesha Hospitality Hub API. Visit /docs for documentation.");
+});
+
 
 const swaggerSpec = swaggerJsDoc(swaggerOptions);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

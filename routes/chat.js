@@ -51,6 +51,30 @@ async function getDashboardSummary() {
 }
 
 // --- POST /api/chat/message ---
+/**
+ * @swagger
+ * /api/chat/message:
+ *   post:
+ *     summary: Send a message to the chat API.
+ *     tags:
+ *       - Chat
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               message:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Chat response received.
+ *       400:
+ *         description: Bad request.
+ *       500:
+ *         description: Internal server error.
+ */
 router.post('/message', async (req, res) => {
     if (!GEMINI_API_KEY) { // Double-check key existence
         return res.status(503).json({ error: "Chat service API key not configured." });
