@@ -5,13 +5,10 @@ require('dotenv').config(); // Ensure dotenv is configured early
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      // Remove useCreateIndex and useFindAndModify if using Mongoose 6+
-      // useCreateIndex: true, // Deprecated in Mongoose 6+
-      // useFindAndModify: false, // Deprecated in Mongoose 6+
+      // Removed deprecated options as they are no longer needed in Mongoose 6+
     });
     console.log('MongoDB Connected...');
+    
   } catch (err) {
     console.error('MongoDB Connection Error:', err.message);
     // Exit process with failure
