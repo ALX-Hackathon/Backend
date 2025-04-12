@@ -10,7 +10,7 @@ const FeedbackSchema = new mongoose.Schema({
     enum: ["Positive", "Neutral", "Negative"],
     default: "Neutral"
   },
-  Comment: { type: String, trim: true, maxlength: 1000 }, // General comment field
+  comment: { type: String, trim: true, maxlength: 1000 }, // General comment field
   feedbackArea: { type: String, trim: true }, // e.g., Checkout, Room, Dining, Pool
 
   // --- Context Fields ---
