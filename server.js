@@ -11,6 +11,7 @@ const authRoutes = require("./routes/auth")
 // --- Swagger Dependencies ---
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const jwt = require("jsonwebtoken"); // Import JWT for authentication
 
 const HOST = process.env.HOST || "0.0.0.0";
 // Connect to Database
@@ -41,20 +42,32 @@ app.use("/api/auth", authRoutes); // Mounting auth route
 const PORT = process.env.PORT || 3001; // Use port from .env or default
 
 const swaggerOptions = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Habesha Hospitality Hub API",
-      version: "1.0.0",
-      description: "API documentation for the Habesha Hospitality Hub"
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Habesha Hospitality Hub API",
+            version: "1.0.0",
+            description: "API documentation for the Habesha Hospitality Hub"
+        },
+        servers: [
+            {
+                url: `https://backend-bhww.onrender.com/`
+            },
+            {
+                url: `http://localhost:${PORT}/`
+            }
+        ],
+        components: {
+            securitySchemes: {
+                bearerAuth: {
+                    type: "http",
+                    scheme: "bearer",
+                    bearerFormat: "JWT"
+                }
+            }
+        },
     },
-    servers: [
-      {
-        url: `https://backend-bhww.onrender.com/`
-      }
-    ]
-  },
-  apis: ["./routes/*.js"] // Adjust path as needed where you add your route annotations
+    apis: ["./routes/*.js"] // Adjust path as needed where you add your route annotations
 };
 
 app.get("/", (req, res) => {
